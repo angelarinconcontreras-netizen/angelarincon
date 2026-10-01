@@ -10,7 +10,8 @@ OUT_DIR="$(cd "$(dirname "$0")" && pwd)/out"
 mkdir -p "$OUT_DIR"
 
 C1="$SRC/0f02b0ca-Clip_1_Espera.mp4"       # 1080x1920 24fps – espera con luces policiales
-C2="$SRC/5d8d8efd-Video_clip_2_1.mp4"      # 1280x720 (vertical con barras) – oficial pide documentos
+C2="$SRC/96758c6b-gemini_generated_video_bdeee69a.mp4"  # 720x1280 24fps – oficial pide documentos (sin atravesar la puerta)
+# (Antes: 5d8d8efd-Video_clip_2_1.mp4, descartado: desde 1.75 s el oficial atraviesa la puerta.)
 C3="$SRC/4c32f91b-Video_Project.mp4"       # 1280x720 (vertical con barras) – entrega del fajo
 C4="$SRC/0a88485e-Clip_3_Fuga.mp4"         # 720x1280 24fps – fuga con dinero volando
 MUSIC="$SRC/8329b90f-WhatsApp_Video_2026-09-30_at_12.25.17_PM.mp4"  # video original (solo audio)
@@ -21,23 +22,23 @@ W=720; H=1280; FPS=24
 # Segmentos (segundos dentro de cada fuente). Duraciones múltiplos de 1/24.
 S1_IN=5.8333; S1_LEN=4.000  # 96 f  -> línea de tiempo 0.000–4.000 (corte en golpe musical 4.02). Termina cuando
                             # la cámara se acerca al conductor y él mira a su ventana: el corte al oficial responde a esa mirada.
-S2_IN=0;     S2_LEN=1.6667  # 40 f  -> 4.000–5.667 (antes de 1.75 s, donde el oficial atraviesa la puerta)
-S3_IN=0.9;   S3_LEN=2.625   # 63 f  -> 5.667–8.292 (la pata con el fajo toca la mano en el golpe 6.66)
-S4_IN=0;     S4_LEN=3.6667  # 88 f  -> 8.292–11.958 (fuga sobre el clímax musical)
+S2_IN=0.6;   S2_LEN=2.625   # 63 f  -> 4.000–6.625 (llega a la ventana y extiende la palma; corte en el golpe 6.66)
+S3_IN=1.0;   S3_LEN=2.3333  # 56 f  -> 6.625–8.958 (palma abierta + fajo: el gesto empalma con la toma anterior)
+S4_IN=0;     S4_LEN=3.000   # 72 f  -> 8.958–11.958 (fuga desde el golpe 8.96 hasta que la música se detiene)
 TOTAL=11.9583               # 287 f; la música original se detiene sola en 11.95 s
 
-# Las tomas 2 y 3 son verticales con barras laterales dentro de 1280x720:
+# La toma 3 (Video_Project) es vertical con barras laterales dentro de 1280x720:
 # el contenido útil está en x=438..842; se recorta un borde mínimo para evitar filos oscuros.
 PILLAR="crop=400:711:440:4"
 # Igualación de color: evaluada con signalstats en las uniones; no hizo falta.
 EQ23="null"  # medido: sin ajuste el salto de luminancia es menor (54→56); no se corrige color
-# Las tomas 2 y 3 se amplían 1.8x y quedan más blandas que la 1: enfoque suave solo en luminancia (sin halos ni ruido de color).
+# La toma 3 se amplía 1.8x y queda más blanda que las demás: enfoque suave solo en luminancia (sin halos ni ruido de color).
 SHARP23="unsharp=5:5:0.75:5:5:0"
 
 if [[ "$MODE" == "preview" ]]; then
-  OUT="$OUT_DIR/prueba_v2.mp4"; CRF=26; PRESET=veryfast
+  OUT="$OUT_DIR/prueba_v3.mp4"; CRF=26; PRESET=veryfast
 else
-  OUT="$OUT_DIR/perros_final_v2.mp4"; CRF=18; PRESET=slow
+  OUT="$OUT_DIR/perros_final_v3.mp4"; CRF=18; PRESET=slow
 fi
 
 ffmpeg -hide_banner -y \
@@ -48,9 +49,9 @@ ffmpeg -hide_banner -y \
   -i "$MUSIC" \
   -filter_complex "
     [0:v]scale=${W}:${H}:flags=lanczos,fps=${FPS},setsar=1,trim=end_frame=96,setpts=PTS-STARTPTS[v1];
-    [1:v]${PILLAR},scale=${W}:${H}:flags=lanczos,${EQ23},${SHARP23},fps=${FPS},setsar=1,trim=end_frame=40,setpts=PTS-STARTPTS[v2];
-    [2:v]${PILLAR},scale=${W}:${H}:flags=lanczos,${EQ23},${SHARP23},fps=${FPS},setsar=1,trim=end_frame=63,setpts=PTS-STARTPTS[v3];
-    [3:v]scale=${W}:${H}:flags=lanczos,fps=${FPS},setsar=1,trim=end_frame=88,setpts=PTS-STARTPTS[v4];
+    [1:v]scale=${W}:${H}:flags=lanczos,fps=${FPS},setsar=1,trim=end_frame=63,setpts=PTS-STARTPTS[v2];
+    [2:v]${PILLAR},scale=${W}:${H}:flags=lanczos,${EQ23},${SHARP23},fps=${FPS},setsar=1,trim=end_frame=56,setpts=PTS-STARTPTS[v3];
+    [3:v]scale=${W}:${H}:flags=lanczos,fps=${FPS},setsar=1,trim=end_frame=72,setpts=PTS-STARTPTS[v4];
     [v1][v2][v3][v4]concat=n=4:v=1:a=0,format=yuv420p[v];
     [4:a]atrim=0:${TOTAL},asetpts=PTS-STARTPTS,aresample=48000,afade=t=in:d=0.03,afade=t=out:st=11.80:d=0.15[a]
   " \
