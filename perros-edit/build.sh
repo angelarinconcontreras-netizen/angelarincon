@@ -22,7 +22,8 @@ W=720; H=1280; FPS=24
 # Segmentos (segundos dentro de cada fuente). Duraciones múltiplos de 1/24.
 S1_IN=5.8333; S1_LEN=4.000  # 96 f  -> línea de tiempo 0.000–4.000 (corte en golpe musical 4.02). Termina cuando
                             # la cámara se acerca al conductor y él mira a su ventana: el corte al oficial responde a esa mirada.
-S2_IN=0.6;   S2_LEN=2.625   # 63 f  -> 4.000–6.625 (llega a la ventana y extiende la palma; corte en el golpe 6.66)
+S2_IN=0.9583; S2_LEN=2.625  # 63 f  -> 4.000–6.625 (llega a la ventana y extiende la palma; corte en el golpe 6.66)
+                            # Sincronía labial: su 1.ª sílaba (1.36 s del clip) cae en 4.40 s, donde la pista dice "what the" (4.41 s).
 S3_IN=1.0;   S3_LEN=2.3333  # 56 f  -> 6.625–8.958 (palma abierta + fajo: el gesto empalma con la toma anterior)
 S4_IN=0;     S4_LEN=3.000   # 72 f  -> 8.958–11.958 (fuga desde el golpe 8.96 hasta que la música se detiene)
 TOTAL=11.9583               # 287 f; la música original se detiene sola en 11.95 s
@@ -36,9 +37,9 @@ EQ23="null"  # medido: sin ajuste el salto de luminancia es menor (54→56); no 
 SHARP23="unsharp=5:5:0.75:5:5:0"
 
 if [[ "$MODE" == "preview" ]]; then
-  OUT="$OUT_DIR/prueba_v3.mp4"; CRF=26; PRESET=veryfast
+  OUT="$OUT_DIR/prueba_v4.mp4"; CRF=26; PRESET=veryfast
 else
-  OUT="$OUT_DIR/perros_final_v3.mp4"; CRF=18; PRESET=slow
+  OUT="$OUT_DIR/perros_final_v4.mp4"; CRF=18; PRESET=slow
 fi
 
 ffmpeg -hide_banner -y \
