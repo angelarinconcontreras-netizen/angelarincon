@@ -19,7 +19,8 @@ MUSIC="$SRC/8329b90f-WhatsApp_Video_2026-09-30_at_12.25.17_PM.mp4"  # video orig
 W=720; H=1280; FPS=24
 
 # Segmentos (segundos dentro de cada fuente). Duraciones múltiplos de 1/24.
-S1_IN=5.5;   S1_LEN=4.000   # 96 f  -> línea de tiempo 0.000–4.000 (corte en golpe musical 4.02; 0–5 s descartado: el copiloto sale de cuadro)
+S1_IN=5.8333; S1_LEN=4.000  # 96 f  -> línea de tiempo 0.000–4.000 (corte en golpe musical 4.02). Termina cuando
+                            # la cámara se acerca al conductor y él mira a su ventana: el corte al oficial responde a esa mirada.
 S2_IN=0;     S2_LEN=1.6667  # 40 f  -> 4.000–5.667 (antes de 1.75 s, donde el oficial atraviesa la puerta)
 S3_IN=0.9;   S3_LEN=2.625   # 63 f  -> 5.667–8.292 (la pata con el fajo toca la mano en el golpe 6.66)
 S4_IN=0;     S4_LEN=3.6667  # 88 f  -> 8.292–11.958 (fuga sobre el clímax musical)
@@ -30,11 +31,13 @@ TOTAL=11.9583               # 287 f; la música original se detiene sola en 11.9
 PILLAR="crop=400:711:440:4"
 # Igualación de color: evaluada con signalstats en las uniones; no hizo falta.
 EQ23="null"  # medido: sin ajuste el salto de luminancia es menor (54→56); no se corrige color
+# Las tomas 2 y 3 se amplían 1.8x y quedan más blandas que la 1: enfoque suave solo en luminancia (sin halos ni ruido de color).
+SHARP23="unsharp=5:5:0.75:5:5:0"
 
 if [[ "$MODE" == "preview" ]]; then
-  OUT="$OUT_DIR/prueba.mp4"; CRF=26; PRESET=veryfast
+  OUT="$OUT_DIR/prueba_v2.mp4"; CRF=26; PRESET=veryfast
 else
-  OUT="$OUT_DIR/perros_final.mp4"; CRF=18; PRESET=slow
+  OUT="$OUT_DIR/perros_final_v2.mp4"; CRF=18; PRESET=slow
 fi
 
 ffmpeg -hide_banner -y \
@@ -45,8 +48,8 @@ ffmpeg -hide_banner -y \
   -i "$MUSIC" \
   -filter_complex "
     [0:v]scale=${W}:${H}:flags=lanczos,fps=${FPS},setsar=1,trim=end_frame=96,setpts=PTS-STARTPTS[v1];
-    [1:v]${PILLAR},scale=${W}:${H}:flags=lanczos,${EQ23},fps=${FPS},setsar=1,trim=end_frame=40,setpts=PTS-STARTPTS[v2];
-    [2:v]${PILLAR},scale=${W}:${H}:flags=lanczos,${EQ23},fps=${FPS},setsar=1,trim=end_frame=63,setpts=PTS-STARTPTS[v3];
+    [1:v]${PILLAR},scale=${W}:${H}:flags=lanczos,${EQ23},${SHARP23},fps=${FPS},setsar=1,trim=end_frame=40,setpts=PTS-STARTPTS[v2];
+    [2:v]${PILLAR},scale=${W}:${H}:flags=lanczos,${EQ23},${SHARP23},fps=${FPS},setsar=1,trim=end_frame=63,setpts=PTS-STARTPTS[v3];
     [3:v]scale=${W}:${H}:flags=lanczos,fps=${FPS},setsar=1,trim=end_frame=88,setpts=PTS-STARTPTS[v4];
     [v1][v2][v3][v4]concat=n=4:v=1:a=0,format=yuv420p[v];
     [4:a]atrim=0:${TOTAL},asetpts=PTS-STARTPTS,aresample=48000,afade=t=in:d=0.03,afade=t=out:st=11.80:d=0.15[a]
