@@ -22,10 +22,11 @@ W=720; H=1280; FPS=24
 # Segmentos (segundos dentro de cada fuente). Duraciones múltiplos de 1/24.
 S1_IN=5.8333; S1_LEN=4.000  # 96 f  -> línea de tiempo 0.000–4.000 (corte en golpe musical 4.02). Termina cuando
                             # la cámara se acerca al conductor y él mira a su ventana: el corte al oficial responde a esa mirada.
-S2_IN=0.9583; S2_LEN=2.625  # 63 f  -> 4.000–6.625 (llega a la ventana y extiende la palma; corte en el golpe 6.66)
-                            # Sincronía labial: su 1.ª sílaba (1.36 s del clip) cae en 4.40 s, donde la pista dice "what the" (4.41 s).
-S3_IN=1.0;   S3_LEN=2.3333  # 56 f  -> 6.625–8.958 (palma abierta + fajo: el gesto empalma con la toma anterior)
-S4_IN=0;     S4_LEN=3.000   # 72 f  -> 8.958–11.958 (fuga desde el golpe 8.96 hasta que la música se detiene)
+S2_IN=0.9583; S2_LEN=1.875  # 45 f  -> 4.000–5.875 (llega a la ventana, habla y extiende la palma)
+                            # Sincronía labial: su 1.ª sílaba (1.36 s del clip) cae en 4.40 s, donde empieza la frase del oficial en la pista (4.41 s).
+S3_IN=1.0;   S3_LEN=2.0417  # 49 f  -> 5.875–7.917 (palma abierta + fajo; el contacto cae cerca del golpe 6.66)
+S4_IN=0;     S4_LEN=4.0417  # 97 f  -> 7.917–11.958 (fuga desde el golpe 7.92). El "what the" de la pista (7.98–8.45 s)
+                            # suena ya sin el oficial en cuadro: se lee como su reacción fuera de cuadro, no como boca desincronizada.
 TOTAL=11.9583               # 287 f; la música original se detiene sola en 11.95 s
 
 # La toma 3 (Video_Project) es vertical con barras laterales dentro de 1280x720:
@@ -37,9 +38,9 @@ EQ23="null"  # medido: sin ajuste el salto de luminancia es menor (54→56); no 
 SHARP23="unsharp=5:5:0.75:5:5:0"
 
 if [[ "$MODE" == "preview" ]]; then
-  OUT="$OUT_DIR/prueba_v4.mp4"; CRF=26; PRESET=veryfast
+  OUT="$OUT_DIR/prueba_v5.mp4"; CRF=26; PRESET=veryfast
 else
-  OUT="$OUT_DIR/perros_final_v4.mp4"; CRF=18; PRESET=slow
+  OUT="$OUT_DIR/perros_final_v5.mp4"; CRF=18; PRESET=slow
 fi
 
 ffmpeg -hide_banner -y \
@@ -50,9 +51,9 @@ ffmpeg -hide_banner -y \
   -i "$MUSIC" \
   -filter_complex "
     [0:v]scale=${W}:${H}:flags=lanczos,fps=${FPS},setsar=1,trim=end_frame=96,setpts=PTS-STARTPTS[v1];
-    [1:v]scale=${W}:${H}:flags=lanczos,fps=${FPS},setsar=1,trim=end_frame=63,setpts=PTS-STARTPTS[v2];
-    [2:v]${PILLAR},scale=${W}:${H}:flags=lanczos,${EQ23},${SHARP23},fps=${FPS},setsar=1,trim=end_frame=56,setpts=PTS-STARTPTS[v3];
-    [3:v]scale=${W}:${H}:flags=lanczos,fps=${FPS},setsar=1,trim=end_frame=72,setpts=PTS-STARTPTS[v4];
+    [1:v]scale=${W}:${H}:flags=lanczos,fps=${FPS},setsar=1,trim=end_frame=45,setpts=PTS-STARTPTS[v2];
+    [2:v]${PILLAR},scale=${W}:${H}:flags=lanczos,${EQ23},${SHARP23},fps=${FPS},setsar=1,trim=end_frame=49,setpts=PTS-STARTPTS[v3];
+    [3:v]scale=${W}:${H}:flags=lanczos,fps=${FPS},setsar=1,trim=end_frame=97,setpts=PTS-STARTPTS[v4];
     [v1][v2][v3][v4]concat=n=4:v=1:a=0,format=yuv420p[v];
     [4:a]atrim=0:${TOTAL},asetpts=PTS-STARTPTS,aresample=48000,afade=t=in:d=0.03,afade=t=out:st=11.80:d=0.15[a]
   " \
